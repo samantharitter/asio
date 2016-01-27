@@ -19,8 +19,13 @@
 
 #include "asio/detail/push_options.hpp"
 
-// OPENSSL: ifdef this out
+#if defined(ASIO_USE_LAZYSSL)
+// LazySSL
+#include "asio/ssl/detail/lazyssl_engine.hpp"
+#else
+// default to OpenSSL
 #include "asio/ssl/detail/openssl_engine.hpp"
+#endif
 
 #include "asio/detail/pop_options.hpp"
 
