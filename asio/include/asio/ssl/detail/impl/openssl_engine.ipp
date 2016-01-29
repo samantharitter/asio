@@ -31,7 +31,8 @@ namespace asio {
 namespace ssl {
 namespace detail {
 
-engine::engine(SSL_CTX *context) : ssl_(::SSL_new(context)) {
+engine::engine(ssl::context &context)
+    : ssl_(::SSL_new(context.native_handle())) {
   std::cout << "using OpenSSL engine" << std::endl;
   if (!ssl_) {
     asio::error_code ec(static_cast<int>(::ERR_get_error()),

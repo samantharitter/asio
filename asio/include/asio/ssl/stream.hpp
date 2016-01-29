@@ -12,7 +12,7 @@
 #define ASIO_SSL_STREAM_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
-# pragma once
+#pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include "asio/detail/config.hpp"
@@ -60,18 +60,14 @@ namespace ssl {
  * AsyncReadStream, AsyncWriteStream, Stream, SyncReadStream, SyncWriteStream.
  */
 template <typename Stream>
-class stream :
-  public stream_base,
-  private noncopyable
-{
+class stream : public stream_base, private noncopyable {
 public:
   /// The native handle type of the SSL stream.
-  typedef SSL* native_handle_type;
+  typedef SSL *native_handle_type;
 
   /// Structure for use with deprecated impl_type.
-  struct impl_struct
-  {
-    SSL* ssl;
+  struct impl_struct {
+    SSL *ssl;
   };
 
   /// The type of the next layer.
@@ -94,20 +90,14 @@ public:
    * @param ctx The SSL context to be used for the stream.
    */
   template <typename Arg>
-  stream(Arg&& arg, context& ctx)
-    : next_layer_(ASIO_MOVE_CAST(Arg)(arg)),
-      core_(ctx.native_handle(),
-          next_layer_.lowest_layer().get_executor().context())
-  {
-  }
-#else // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+  stream(Arg &&arg, context &ctx)
+      : next_layer_(ASIO_MOVE_CAST(Arg)(arg)),
+        core_(ctx, next_layer_.lowest_layer().get_executor().context()) {}
+#else  // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
   template <typename Arg>
-  stream(Arg& arg, context& ctx)
-    : next_layer_(arg),
-      core_(ctx.native_handle(),
-          next_layer_.lowest_layer().get_executor().context())
-  {
-  }
+  stream(Arg &arg, context &ctx)
+      : next_layer_(arg),
+        core_(ctx, next_layer_.lowest_layer().get_executor().context()) {}
 #endif // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
 
   /// Destructor.
@@ -115,9 +105,7 @@ public:
    * @note A @c stream object must not be destroyed while there are pending
    * asynchronous operations associated with it.
    */
-  ~stream()
-  {
-  }
+  ~stream() {}
 
   /// Get the executor associated with the object.
   /**
@@ -126,23 +114,20 @@ public:
    *
    * @return A copy of the executor that stream will use to dispatch handlers.
    */
-  executor_type get_executor() ASIO_NOEXCEPT
-  {
+  executor_type get_executor() ASIO_NOEXCEPT {
     return next_layer_.lowest_layer().get_executor();
   }
 
 #if !defined(ASIO_NO_DEPRECATED)
   /// (Deprecated: Use get_executor().) Get the io_context associated with the
   /// object.
-  asio::io_context& get_io_context()
-  {
+  asio::io_context &get_io_context() {
     return next_layer_.lowest_layer().get_io_context();
   }
 
   /// (Deprecated: Use get_executor().) Get the io_context associated with the
   /// object.
-  asio::io_context& get_io_service()
-  {
+  asio::io_context &get_io_service() {
     return next_layer_.lowest_layer().get_io_service();
   }
 #endif // !defined(ASIO_NO_DEPRECATED)
@@ -171,10 +156,7 @@ public:
    * }
    * @endcode
    */
-  native_handle_type native_handle()
-  {
-    return core_.engine_.native_handle();
-  }
+  native_handle_type native_handle() { return core_.engine_.native_handle(); }
 
   /// Get a reference to the next layer.
   /**
@@ -184,10 +166,7 @@ public:
    * @return A reference to the next layer in the stack of stream layers.
    * Ownership is not transferred to the caller.
    */
-  const next_layer_type& next_layer() const
-  {
-    return next_layer_;
-  }
+  const next_layer_type &next_layer() const { return next_layer_; }
 
   /// Get a reference to the next layer.
   /**
@@ -197,10 +176,7 @@ public:
    * @return A reference to the next layer in the stack of stream layers.
    * Ownership is not transferred to the caller.
    */
-  next_layer_type& next_layer()
-  {
-    return next_layer_;
-  }
+  next_layer_type &next_layer() { return next_layer_; }
 
   /// Get a reference to the lowest layer.
   /**
@@ -210,10 +186,7 @@ public:
    * @return A reference to the lowest layer in the stack of stream layers.
    * Ownership is not transferred to the caller.
    */
-  lowest_layer_type& lowest_layer()
-  {
-    return next_layer_.lowest_layer();
-  }
+  lowest_layer_type &lowest_layer() { return next_layer_.lowest_layer(); }
 
   /// Get a reference to the lowest layer.
   /**
@@ -223,8 +196,7 @@ public:
    * @return A reference to the lowest layer in the stack of stream layers.
    * Ownership is not transferred to the caller.
    */
-  const lowest_layer_type& lowest_layer() const
-  {
+  const lowest_layer_type &lowest_layer() const {
     return next_layer_.lowest_layer();
   }
 
@@ -240,8 +212,7 @@ public:
    *
    * @note Calls @c SSL_set_verify.
    */
-  void set_verify_mode(verify_mode v)
-  {
+  void set_verify_mode(verify_mode v) {
     asio::error_code ec;
     set_verify_mode(v, ec);
     asio::detail::throw_error(ec, "set_verify_mode");
@@ -259,9 +230,7 @@ public:
    *
    * @note Calls @c SSL_set_verify.
    */
-  asio::error_code set_verify_mode(
-      verify_mode v, asio::error_code& ec)
-  {
+  asio::error_code set_verify_mode(verify_mode v, asio::error_code &ec) {
     return core_.engine_.set_verify_mode(v, ec);
   }
 
@@ -277,8 +246,7 @@ public:
    *
    * @note Calls @c SSL_set_verify_depth.
    */
-  void set_verify_depth(int depth)
-  {
+  void set_verify_depth(int depth) {
     asio::error_code ec;
     set_verify_depth(depth, ec);
     asio::detail::throw_error(ec, "set_verify_depth");
@@ -296,9 +264,7 @@ public:
    *
    * @note Calls @c SSL_set_verify_depth.
    */
-  asio::error_code set_verify_depth(
-      int depth, asio::error_code& ec)
-  {
+  asio::error_code set_verify_depth(int depth, asio::error_code &ec) {
     return core_.engine_.set_verify_depth(depth, ec);
   }
 
@@ -321,8 +287,7 @@ public:
    * @note Calls @c SSL_set_verify.
    */
   template <typename VerifyCallback>
-  void set_verify_callback(VerifyCallback callback)
-  {
+  void set_verify_callback(VerifyCallback callback) {
     asio::error_code ec;
     this->set_verify_callback(callback, ec);
     asio::detail::throw_error(ec, "set_verify_callback");
@@ -348,8 +313,7 @@ public:
    */
   template <typename VerifyCallback>
   asio::error_code set_verify_callback(VerifyCallback callback,
-      asio::error_code& ec)
-  {
+                                       asio::error_code &ec) {
     return core_.engine_.set_verify_callback(
         new detail::verify_callback<VerifyCallback>(callback), ec);
   }
@@ -364,8 +328,7 @@ public:
    *
    * @throws asio::system_error Thrown on failure.
    */
-  void handshake(handshake_type type)
-  {
+  void handshake(handshake_type type) {
     asio::error_code ec;
     handshake(type, ec);
     asio::detail::throw_error(ec, "handshake");
@@ -381,9 +344,7 @@ public:
    *
    * @param ec Set to indicate what error occurred, if any.
    */
-  asio::error_code handshake(handshake_type type,
-      asio::error_code& ec)
-  {
+  asio::error_code handshake(handshake_type type, asio::error_code &ec) {
     detail::io(next_layer_, core_, detail::handshake_op(type), ec);
     return ec;
   }
@@ -401,8 +362,7 @@ public:
    * @throws asio::system_error Thrown on failure.
    */
   template <typename ConstBufferSequence>
-  void handshake(handshake_type type, const ConstBufferSequence& buffers)
-  {
+  void handshake(handshake_type type, const ConstBufferSequence &buffers) {
     asio::error_code ec;
     handshake(type, buffers, ec);
     asio::detail::throw_error(ec, "handshake");
@@ -422,9 +382,10 @@ public:
    */
   template <typename ConstBufferSequence>
   asio::error_code handshake(handshake_type type,
-      const ConstBufferSequence& buffers, asio::error_code& ec)
-  {
-    detail::io(next_layer_, core_,
+                             const ConstBufferSequence &buffers,
+                             asio::error_code &ec) {
+    detail::io(
+        next_layer_, core_,
         detail::buffered_handshake_op<ConstBufferSequence>(type, buffers), ec);
     return ec;
   }
@@ -445,20 +406,18 @@ public:
    * ); @endcode
    */
   template <typename HandshakeHandler>
-  ASIO_INITFN_RESULT_TYPE(HandshakeHandler,
-      void (asio::error_code))
-  async_handshake(handshake_type type,
-      ASIO_MOVE_ARG(HandshakeHandler) handler)
-  {
+  ASIO_INITFN_RESULT_TYPE(HandshakeHandler, void(asio::error_code))
+      async_handshake(handshake_type type,
+                      ASIO_MOVE_ARG(HandshakeHandler) handler) {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a HandshakeHandler.
     ASIO_HANDSHAKE_HANDLER_CHECK(HandshakeHandler, handler) type_check;
 
-    asio::async_completion<HandshakeHandler,
-      void (asio::error_code)> init(handler);
+    asio::async_completion<HandshakeHandler, void(asio::error_code)> init(
+        handler);
 
-    detail::async_io(next_layer_, core_,
-        detail::handshake_op(type), init.handler);
+    detail::async_io(next_layer_, core_, detail::handshake_op(type),
+                     init.handler);
 
     return init.result.get();
   }
@@ -486,19 +445,19 @@ public:
    */
   template <typename ConstBufferSequence, typename BufferedHandshakeHandler>
   ASIO_INITFN_RESULT_TYPE(BufferedHandshakeHandler,
-      void (asio::error_code, std::size_t))
-  async_handshake(handshake_type type, const ConstBufferSequence& buffers,
-      ASIO_MOVE_ARG(BufferedHandshakeHandler) handler)
-  {
+                          void(asio::error_code, std::size_t))
+      async_handshake(handshake_type type, const ConstBufferSequence &buffers,
+                      ASIO_MOVE_ARG(BufferedHandshakeHandler) handler) {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a BufferedHandshakeHandler.
-    ASIO_BUFFERED_HANDSHAKE_HANDLER_CHECK(
-        BufferedHandshakeHandler, handler) type_check;
+    ASIO_BUFFERED_HANDSHAKE_HANDLER_CHECK(BufferedHandshakeHandler, handler)
+        type_check;
 
     asio::async_completion<BufferedHandshakeHandler,
-      void (asio::error_code, std::size_t)> init(handler);
+                           void(asio::error_code, std::size_t)> init(handler);
 
-    detail::async_io(next_layer_, core_,
+    detail::async_io(
+        next_layer_, core_,
         detail::buffered_handshake_op<ConstBufferSequence>(type, buffers),
         init.handler);
 
@@ -512,8 +471,7 @@ public:
    *
    * @throws asio::system_error Thrown on failure.
    */
-  void shutdown()
-  {
+  void shutdown() {
     asio::error_code ec;
     shutdown(ec);
     asio::detail::throw_error(ec, "shutdown");
@@ -526,8 +484,7 @@ public:
    *
    * @param ec Set to indicate what error occurred, if any.
    */
-  asio::error_code shutdown(asio::error_code& ec)
-  {
+  asio::error_code shutdown(asio::error_code &ec) {
     detail::io(next_layer_, core_, detail::shutdown_op(), ec);
     return ec;
   }
@@ -545,16 +502,14 @@ public:
    * ); @endcode
    */
   template <typename ShutdownHandler>
-  ASIO_INITFN_RESULT_TYPE(ShutdownHandler,
-      void (asio::error_code))
-  async_shutdown(ASIO_MOVE_ARG(ShutdownHandler) handler)
-  {
+  ASIO_INITFN_RESULT_TYPE(ShutdownHandler, void(asio::error_code))
+      async_shutdown(ASIO_MOVE_ARG(ShutdownHandler) handler) {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a ShutdownHandler.
     ASIO_SHUTDOWN_HANDLER_CHECK(ShutdownHandler, handler) type_check;
 
-    asio::async_completion<ShutdownHandler,
-      void (asio::error_code)> init(handler);
+    asio::async_completion<ShutdownHandler, void(asio::error_code)> init(
+        handler);
 
     detail::async_io(next_layer_, core_, detail::shutdown_op(), init.handler);
 
@@ -578,8 +533,7 @@ public:
    * data is written before the blocking operation completes.
    */
   template <typename ConstBufferSequence>
-  std::size_t write_some(const ConstBufferSequence& buffers)
-  {
+  std::size_t write_some(const ConstBufferSequence &buffers) {
     asio::error_code ec;
     std::size_t n = write_some(buffers, ec);
     asio::detail::throw_error(ec, "write_some");
@@ -603,11 +557,10 @@ public:
    * data is written before the blocking operation completes.
    */
   template <typename ConstBufferSequence>
-  std::size_t write_some(const ConstBufferSequence& buffers,
-      asio::error_code& ec)
-  {
+  std::size_t write_some(const ConstBufferSequence &buffers,
+                         asio::error_code &ec) {
     return detail::io(next_layer_, core_,
-        detail::write_op<ConstBufferSequence>(buffers), ec);
+                      detail::write_op<ConstBufferSequence>(buffers), ec);
   }
 
   /// Start an asynchronous write.
@@ -633,20 +586,19 @@ public:
    * ensure that all data is written before the blocking operation completes.
    */
   template <typename ConstBufferSequence, typename WriteHandler>
-  ASIO_INITFN_RESULT_TYPE(WriteHandler,
-      void (asio::error_code, std::size_t))
-  async_write_some(const ConstBufferSequence& buffers,
-      ASIO_MOVE_ARG(WriteHandler) handler)
-  {
+  ASIO_INITFN_RESULT_TYPE(WriteHandler, void(asio::error_code, std::size_t))
+      async_write_some(const ConstBufferSequence &buffers,
+                       ASIO_MOVE_ARG(WriteHandler) handler) {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a WriteHandler.
     ASIO_WRITE_HANDLER_CHECK(WriteHandler, handler) type_check;
 
-    asio::async_completion<WriteHandler,
-      void (asio::error_code, std::size_t)> init(handler);
+    asio::async_completion<WriteHandler, void(asio::error_code, std::size_t)>
+        init(handler);
 
     detail::async_io(next_layer_, core_,
-        detail::write_op<ConstBufferSequence>(buffers), init.handler);
+                     detail::write_op<ConstBufferSequence>(buffers),
+                     init.handler);
 
     return init.result.get();
   }
@@ -668,8 +620,7 @@ public:
    * requested amount of data is read before the blocking operation completes.
    */
   template <typename MutableBufferSequence>
-  std::size_t read_some(const MutableBufferSequence& buffers)
-  {
+  std::size_t read_some(const MutableBufferSequence &buffers) {
     asio::error_code ec;
     std::size_t n = read_some(buffers, ec);
     asio::detail::throw_error(ec, "read_some");
@@ -693,11 +644,10 @@ public:
    * requested amount of data is read before the blocking operation completes.
    */
   template <typename MutableBufferSequence>
-  std::size_t read_some(const MutableBufferSequence& buffers,
-      asio::error_code& ec)
-  {
+  std::size_t read_some(const MutableBufferSequence &buffers,
+                        asio::error_code &ec) {
     return detail::io(next_layer_, core_,
-        detail::read_op<MutableBufferSequence>(buffers), ec);
+                      detail::read_op<MutableBufferSequence>(buffers), ec);
   }
 
   /// Start an asynchronous read.
@@ -724,20 +674,19 @@ public:
    * operation completes.
    */
   template <typename MutableBufferSequence, typename ReadHandler>
-  ASIO_INITFN_RESULT_TYPE(ReadHandler,
-      void (asio::error_code, std::size_t))
-  async_read_some(const MutableBufferSequence& buffers,
-      ASIO_MOVE_ARG(ReadHandler) handler)
-  {
+  ASIO_INITFN_RESULT_TYPE(ReadHandler, void(asio::error_code, std::size_t))
+      async_read_some(const MutableBufferSequence &buffers,
+                      ASIO_MOVE_ARG(ReadHandler) handler) {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a ReadHandler.
     ASIO_READ_HANDLER_CHECK(ReadHandler, handler) type_check;
 
-    asio::async_completion<ReadHandler,
-      void (asio::error_code, std::size_t)> init(handler);
+    asio::async_completion<ReadHandler, void(asio::error_code, std::size_t)>
+        init(handler);
 
     detail::async_io(next_layer_, core_,
-        detail::read_op<MutableBufferSequence>(buffers), init.handler);
+                     detail::read_op<MutableBufferSequence>(buffers),
+                     init.handler);
 
     return init.result.get();
   }

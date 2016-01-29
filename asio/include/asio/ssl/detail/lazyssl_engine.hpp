@@ -9,6 +9,7 @@
 
 #include "asio/buffer.hpp"
 #include "asio/detail/static_mutex.hpp"
+#include "asio/ssl/context.hpp"
 #include "asio/ssl/detail/openssl_types.hpp"
 #include "asio/ssl/detail/verify_callback.hpp"
 #include "asio/ssl/stream_base.hpp"
@@ -48,7 +49,7 @@ public:
   };
 
   // Construct a new engine for the specified context.
-  ASIO_DECL explicit engine(SSL_CTX *context) {}
+  ASIO_DECL explicit engine(ssl::context &context) {}
 
   // Destructor.
   ASIO_DECL ~engine() {}
