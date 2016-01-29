@@ -80,7 +80,8 @@ public:
   // SSL_accept (server-side).
   ASIO_DECL want
   handshake(stream_base::handshake_type type, asio::error_code &ec) {
-    std::cout << "handshake(): nah" << std::endl;
+    std::cout << "handshake(): nah." << std::endl;
+    // skip it.
     return want_nothing;
   }
 
@@ -93,9 +94,14 @@ public:
   // Write bytes to the SSL session.
   ASIO_DECL want write(const asio::const_buffer &data, asio::error_code &ec,
                        std::size_t &bytes_transferred) {
-    std::cout << "write(): no." << std::endl;
-    bytes_transferred = 0;
+    // so instead of just doing nothing here, let's try two steps:
+    // 1. say bytes_transferred is the length of the buffer
+    // 2. actually just do the write.
+    // where is the socket?
+    std::cout << "write(): eh." << std::endl;
+    bytes_transferred = data.size();
     ec = asio::error_code();
+    return engine::want_nothing;
   }
 
   // Read bytes from the SSL session.
@@ -103,7 +109,9 @@ public:
                       std::size_t &bytes_transferred) {
     std::cout << "read(): don't think so" << std::endl;
     bytes_transferred = 0;
-    ec = asio::error::operation_not_supported;
+    ec = asio::error_code();
+    // ec = asio::error::operation_not_supported;
+    return engine::want_nothing;
   }
 
   // Get output data to be written to the transport.
@@ -123,8 +131,16 @@ public:
   // the type and state of the SSL session. Returns a const reference to the
   // error code object, suitable for passing to a completion handler.
   ASIO_DECL const asio::error_code &map_error_code(asio::error_code &ec) const {
-    std::cout << "map_error_code(): Eh, I'm sure this one's fine" << std::endl;
-    return _error_code;
+    std::cout << "map_error_code(): Mapping error " << ec << std::endl;
+    // We only want to map the eof error code.
+    if (ec != asio::error::eof)
+      return ec;
+
+    // All the other stuff is OpenSSL-related, so we'll just go with
+    // unclean shutdown.
+    ec = asio::ssl::error::stream_truncated;
+
+    return ec;
   }
 
 private:
